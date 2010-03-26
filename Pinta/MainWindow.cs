@@ -35,6 +35,8 @@ namespace Pinta
 	{
 		DialogHandlers dialog_handler;
 		
+		ProgressDialog progress_dialog;
+		
 		public MainWindow () : base (Gtk.WindowType.Toplevel)
 		{
 			Build ();
@@ -48,7 +50,9 @@ namespace Pinta
 			PintaCore.Actions.AccelGroup = new AccelGroup ();
 			this.AddAccelGroup (PintaCore.Actions.AccelGroup);
 
-			PintaCore.Initialize (tooltoolbar, label5, drawingarea1, history_treeview, this);
+			progress_dialog = new ProgressDialog ();
+			
+			PintaCore.Initialize (tooltoolbar, label5, drawingarea1, history_treeview, this, progress_dialog);
 			colorpalettewidget1.Initialize ();
 
 			PintaCore.Chrome.StatusBarTextChanged += new EventHandler<TextChangedEventArgs> (Chrome_StatusBarTextChanged);
@@ -284,7 +288,6 @@ namespace Pinta
 				even = !even;
 			}
 		}
-
 		#region Drawing Area
 		private void OnDrawingarea1ExposeEvent (object o, Gtk.ExposeEventArgs args)
 		{

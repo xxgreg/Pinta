@@ -105,6 +105,8 @@
     <Compile Include="ConfigurableEffects\MotionBlurEffect.cs" />
     <Compile Include="ConfigurableEffects\FragmentEffect.cs" />
     <Compile Include="ConfigurableEffects\EffectHelper.cs" />
+    <Compile Include="gtk-gui\Pinta.ProgressDialog.cs" />
+    <Compile Include="Dialogs\ProgressDialog.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
