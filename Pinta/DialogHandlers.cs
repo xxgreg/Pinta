@@ -48,7 +48,7 @@ namespace Pinta
 			PintaCore.Actions.Adjustments.HueSaturation.Activated += HandleEffectActivated <HueSaturationEffect>;
 			PintaCore.Actions.Effects.InkSketch.Activated += HandleEffectActivated <InkSketchEffect>;
 			PintaCore.Actions.Effects.OilPainting.Activated += HandleEffectActivated <OilPaintingEffect>;
-			PintaCore.Actions.Effects.PencilSketch.Activated += HandleEffectPencilSketchActivated;
+			PintaCore.Actions.Effects.PencilSketch.Activated += HandleEffectActivated <PencilSketchEffect>;
 			PintaCore.Actions.Effects.Fragment.Activated += HandleEffectFragmentActivated;
 			PintaCore.Actions.Effects.GaussianBlur.Activated += HandleEffectActivated <GaussianBlurEffect>;
 			PintaCore.Actions.Effects.RadialBlur.Activated += HandleEffectRadialBlurActivated;
@@ -211,11 +211,6 @@ namespace Pinta
 		private void HandleAdjustmentsLevelsActivated (object sender, EventArgs e)
 		{
 			PintaCore.Actions.Adjustments.PerformEffect (new LevelsEffect ());
-		}
-
-		private void HandleEffectPencilSketchActivated (object sender, EventArgs e)
-		{
-			PintaCore.Actions.Adjustments.PerformEffect (new PencilSketchEffect ());
 		}
 
 		private void HandleEffectFragmentActivated (object sender, EventArgs e)
