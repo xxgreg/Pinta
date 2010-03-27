@@ -274,7 +274,7 @@ namespace Pinta.Core
 			public int Radius = 2;
 			
 			[Skip]
-			public override bool IsEmpty { get { return Radius == 0; } }
+			public override bool IsDefault { get { return Radius == 0; } }
 		}
 	}
 }

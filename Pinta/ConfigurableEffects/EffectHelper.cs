@@ -56,7 +56,7 @@ namespace Pinta
 
 			bool ret = false;
 			if (response == (int)Gtk.ResponseType.Ok && effect.EffectData != null)
-				ret = !effect.EffectData.IsEmpty;
+				ret = !effect.EffectData.IsDefault;
 
 			dialog.Destroy ();
 

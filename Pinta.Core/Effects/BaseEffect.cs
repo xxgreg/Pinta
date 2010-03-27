@@ -110,6 +110,6 @@ namespace Pinta.Core
 			base.FirePropertyChanged (propertyName);
 		}
 		
-		public virtual bool IsEmpty { get { return false; } }
+		public virtual bool IsDefault { get { return false; } }
 	}
 }
