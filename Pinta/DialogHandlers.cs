@@ -45,7 +45,7 @@ namespace Pinta
 			PintaCore.Actions.Adjustments.Curves.Activated += HandleAdjustmentsCurvesActivated;
 			PintaCore.Actions.Adjustments.Levels.Activated += HandleAdjustmentsLevelsActivated;
 			PintaCore.Actions.Adjustments.Posterize.Activated += HandleAdjustmentsPosterizeActivated;
-			PintaCore.Actions.Adjustments.HueSaturation.Activated += HandleAdjustmentsHueSaturationActivated;
+			PintaCore.Actions.Adjustments.HueSaturation.Activated += HandleEffectActivated <HueSaturationEffect>;
 			PintaCore.Actions.Effects.InkSketch.Activated += HandleEffectInkSketchActivated;
 			PintaCore.Actions.Effects.OilPainting.Activated += HandleEffectOilPaintingActivated;
 			PintaCore.Actions.Effects.PencilSketch.Activated += HandleEffectPencilSketchActivated;
@@ -197,17 +197,7 @@ namespace Pinta
 			var effect = new T ();
 			PintaCore.LivePreview.Start (effect);
 		}
-		
-		private void HandleAdjustmentsHueSaturationActivated (object sender, EventArgs e)
-		{
-			PintaCore.Actions.Adjustments.PerformEffect (new HueSaturationEffect ());
-		}
-		
-		private void HandleAdjustmentsBrightnessContrastActivated (object sender, EventArgs e)
-		{
-			PintaCore.Actions.Adjustments.PerformEffect (new BrightnessContrastEffect ());
-		}
-		
+				
 		private void HandleAdjustmentsPosterizeActivated (object sender, EventArgs e)
 		{
 			PintaCore.Actions.Adjustments.PerformEffect (new PosterizeEffect ());
