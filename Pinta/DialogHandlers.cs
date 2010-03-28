@@ -55,7 +55,7 @@ namespace Pinta
 			PintaCore.Actions.Effects.MotionBlur.Activated += HandleEffectMotionBlurActivated;
 			PintaCore.Actions.Effects.Glow.Activated += HandleEffectActivated <GlowEffect>;
 			PintaCore.Actions.Effects.RedEyeRemove.Activated += HandleEffectActivated <RedEyeRemoveEffect>;
-			PintaCore.Actions.Effects.Sharpen.Activated += HandleEffectsSharpenActivated;
+			PintaCore.Actions.Effects.Sharpen.Activated += HandleEffectActivated <SharpenEffect>;
 			PintaCore.Actions.Effects.SoftenPortrait.Activated += HandleEffectsSoftenPortraitActivated;
 			PintaCore.Actions.Effects.EdgeDetect.Activated += HandleEffectsEdgeDetectActivated;
 		}
@@ -221,11 +221,6 @@ namespace Pinta
 		private void HandleEffectMotionBlurActivated (object sender, EventArgs e)
 		{
 			PintaCore.Actions.Adjustments.PerformEffect (new MotionBlurEffect ());
-		}
-		
-		private void HandleEffectsSharpenActivated (object sender, EventArgs e)
-		{
-			PintaCore.Actions.Adjustments.PerformEffect (new SharpenEffect ());
 		}
 		
 		private void HandleEffectsSoftenPortraitActivated (object sender, EventArgs e)
