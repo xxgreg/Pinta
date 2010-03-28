@@ -33,8 +33,8 @@ namespace Pinta.Gui.Widgets
 {
 	public class SimpleEffectDialog : Gtk.Dialog
 	{
-		const uint slider_delay_millis = 100;
-		uint slider_delay_timeout_id;
+		const uint event_delay_millis = 100;
+		uint event_delay_timeout_id;
 		
 		public SimpleEffectDialog (string title, Gdk.Pixbuf icon, object effectData)
 		{
@@ -135,11 +135,11 @@ namespace Pinta.Gui.Widgets
 			
 			widget.ValueChanged += delegate (object sender, EventArgs e) {
 				
-				if (slider_delay_timeout_id != 0)
-					GLib.Source.Remove (slider_delay_timeout_id);
+				if (event_delay_timeout_id != 0)
+					GLib.Source.Remove (event_delay_timeout_id);
 				
-				slider_delay_timeout_id = GLib.Timeout.Add (slider_delay_millis, () => {
-					slider_delay_timeout_id = 0;
+				event_delay_timeout_id = GLib.Timeout.Add (event_delay_millis, () => {
+					event_delay_timeout_id = 0;
 					SetValue (member, o, widget.Value);
 					return false;
 				});
@@ -198,8 +198,15 @@ namespace Pinta.Gui.Widgets
 			widget.Label = caption;
 			widget.DefaultValue = (double)GetValue (member, o);
 			
-			widget.ValueChanged += delegate (object sender, EventArgs e) {
-				SetValue (member, o, widget.Value);
+			widget.ValueChanged += delegate (object sender, EventArgs e) {				
+				if (event_delay_timeout_id != 0)
+					GLib.Source.Remove (event_delay_timeout_id);
+				
+				event_delay_timeout_id = GLib.Timeout.Add (event_delay_millis, () => {
+					event_delay_timeout_id = 0;
+					SetValue (member, o, widget.Value);
+					return false;
+				});
 			};
 
 			return widget;
