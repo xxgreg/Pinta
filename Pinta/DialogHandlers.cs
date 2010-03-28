@@ -52,7 +52,7 @@ namespace Pinta
 			PintaCore.Actions.Effects.Fragment.Activated += HandleEffectActivated <FragmentEffect>;
 			PintaCore.Actions.Effects.GaussianBlur.Activated += HandleEffectActivated <GaussianBlurEffect>;
 			PintaCore.Actions.Effects.RadialBlur.Activated += HandleEffectRadialBlurActivated;
-			PintaCore.Actions.Effects.MotionBlur.Activated += HandleEffectMotionBlurActivated;
+			PintaCore.Actions.Effects.MotionBlur.Activated += HandleEffectActivated <MotionBlurEffect>;
 			PintaCore.Actions.Effects.Glow.Activated += HandleEffectActivated <GlowEffect>;
 			PintaCore.Actions.Effects.RedEyeRemove.Activated += HandleEffectActivated <RedEyeRemoveEffect>;
 			PintaCore.Actions.Effects.Sharpen.Activated += HandleEffectActivated <SharpenEffect>;
@@ -216,11 +216,6 @@ namespace Pinta
 		private void HandleEffectRadialBlurActivated (object sender, EventArgs e)
 		{
 			PintaCore.Actions.Adjustments.PerformEffect (new RadialBlurEffect ());
-		}
-		
-		private void HandleEffectMotionBlurActivated (object sender, EventArgs e)
-		{
-			PintaCore.Actions.Adjustments.PerformEffect (new MotionBlurEffect ());
 		}
 		#endregion
 	}
