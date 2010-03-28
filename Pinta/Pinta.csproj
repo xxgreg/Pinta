@@ -104,6 +104,7 @@
     <Compile Include="ConfigurableEffects\RadialBlurEffect.cs" />
     <Compile Include="ConfigurableEffects\MotionBlurEffect.cs" />
     <Compile Include="ConfigurableEffects\FragmentEffect.cs" />
+    <Compile Include="ConfigurableEffects\EffectHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -27,11 +27,15 @@
 using System;
 using System.Reflection;
 using System.Text;
+using System.ComponentModel;
 
 namespace Pinta.Gui.Widgets
 {
 	public class SimpleEffectDialog : Gtk.Dialog
 	{
+		const uint slider_delay_millis = 100;
+		uint slider_delay_timeout_id;
+		
 		public SimpleEffectDialog (string title, Gdk.Pixbuf icon, object effectData)
 		{
 			Title = title;
@@ -52,6 +56,8 @@ namespace Pinta.Gui.Widgets
 
 		public object EffectData { get; private set; }
 
+		public event PropertyChangedEventHandler EffectDataChanged;
+		
 		#region EffectData Parser
 		private void BuildDialog ()
 		{
@@ -128,7 +134,15 @@ namespace Pinta.Gui.Widgets
 			widget.DefaultValue = (int)GetValue (member, o);
 			
 			widget.ValueChanged += delegate (object sender, EventArgs e) {
-				SetValue (member, o, widget.Value);
+				
+				if (slider_delay_timeout_id != 0)
+					GLib.Source.Remove (slider_delay_timeout_id);
+				
+				slider_delay_timeout_id = GLib.Timeout.Add (slider_delay_millis, () => {
+					slider_delay_timeout_id = 0;
+					SetValue (member, o, widget.Value);
+					return false;
+				});
 			};
 			
 			return widget;
@@ -212,16 +226,23 @@ namespace Pinta.Gui.Widgets
 			return getMethod.Invoke (o, new object[0]);
 		}
 
-		private static void SetValue (MemberInfo mi, object o, object val)
-		{
+		private void SetValue (MemberInfo mi, object o, object val)
+		{			
 			var fi = mi as FieldInfo;
+			var pi = mi as PropertyInfo;
+			string fieldName = null;
+			
 			if (fi != null) {
 				fi.SetValue (o, val);
-				return;
+				fieldName = fi.Name;
+			} else if (pi != null) {
+				var setMethod = pi.GetSetMethod ();
+				setMethod.Invoke (o, new object[] { val });
+				fieldName = pi.Name;
 			}
-			var pi = mi as PropertyInfo;
-			var setMethod = pi.GetSetMethod ();
-			setMethod.Invoke (o, new object[] { val });
+						
+			if (EffectDataChanged != null)
+				EffectDataChanged (this, new PropertyChangedEventArgs(fieldName));
 		}
 
 		// Returns the type for fields and properties and null for everything else
