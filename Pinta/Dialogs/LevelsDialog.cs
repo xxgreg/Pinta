@@ -35,13 +35,14 @@ namespace Pinta
 	public partial class LevelsDialog : Gtk.Dialog
 	{	
 		private bool[] mask;
-			
-		public UnaryPixelOps.Level Levels { get; private set; }
 		
-		public LevelsDialog ()
-		{
+		public LevelsData EffectData { get; private set; }
+		
+		public LevelsDialog (LevelsData effectData)
+		{			
 			this.Build ();
-			this.Levels = new UnaryPixelOps.Level ();
+			
+			EffectData = effectData;			
 			mask = new bool[] {true, true, true};
 
 			this.HasSeparator = false;
@@ -75,6 +76,30 @@ namespace Pinta
 			colorpanelInHigh.ButtonPressEvent += HandleColorPanelButtonPressEvent;
 			colorpanelOutLow.ButtonPressEvent += HandleColorPanelButtonPressEvent;
 			colorpanelOutHigh.ButtonPressEvent += HandleColorPanelButtonPressEvent;
+		}
+		
+		private UnaryPixelOps.Level Levels {
+			get {
+				if (EffectData == null)
+					throw new InvalidOperationException ("Effect data not set on levels dialog.");
+				
+				return EffectData.Levels;
+			}
+			
+			set {
+				if (value == null)
+					throw new ArgumentNullException ();
+				
+				EffectData.Levels = value;
+			}
+		}		
+		
+		private void UpdateLivePreview ()
+		{
+			Console.WriteLine ("Update live preview.");
+			
+			if (EffectData != null)
+				EffectData.FirePropertyChanged ("Levels");
 		}
 		
 		private void UpdateInputHistogram ()
@@ -134,7 +159,7 @@ namespace Pinta
 
 		private void HandleSpinInLowValueChanged (object sender, EventArgs e)
 		{
-			gradientInput.SetValue (0, spinInLow.ValueAsInt);
+			gradientInput.SetValue (0, spinInLow.ValueAsInt);			
 		}
 
 		private void HandleSpinInHighValueChanged (object sender, EventArgs e)
@@ -311,6 +336,8 @@ namespace Pinta
 				
 			GdkWindow.Invalidate ();
 			disable_updating = false;
+			
+			UpdateLivePreview ();
 		}
 		
 		private void HandleGradientButtonPressEvent (object o, ButtonPressEventArgs args)
