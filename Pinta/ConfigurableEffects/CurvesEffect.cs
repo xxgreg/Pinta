@@ -33,10 +33,7 @@ namespace Pinta.Core
 {
 
 	public class CurvesEffect : BaseEffect
-	{
-		private SortedList<int, int>[] control_points;
-		private ColorTransferMode mode;
-			
+	{			
 		public override string Icon {
 			get { return "Menu.Adjustments.Curves.png"; }
 		}
@@ -49,23 +46,19 @@ namespace Pinta.Core
 			get { return true; }
 		}
 		
+		public CurvesData Data { get { return EffectData as CurvesData; } }
+		
 		public override bool LaunchConfiguration ()
 		{
-			CurvesDialog dialog = new CurvesDialog ();
+			var dialog = new CurvesDialog (Data);
+			dialog.Title = Text;
 			dialog.Icon = PintaCore.Resources.GetIcon (Icon);
+			
 			int response = dialog.Run ();
 			
-			if (response == (int)Gtk.ResponseType.Ok) {
-				
-				control_points = dialog.ControlPoints;
-				mode = dialog.Mode;
-				
-				dialog.Destroy ();
-				return true;
-			}
-
 			dialog.Destroy ();
-			return false;
+			
+			return (response == (int)Gtk.ResponseType.Ok);
 		}
 		
 		public override void RenderEffect (ImageSurface src, ImageSurface dest, Gdk.Rectangle[] rois)
@@ -81,7 +74,7 @@ namespace Pinta.Core
             byte[][] transferCurves;
             int entries;
 
-            switch (mode) {
+            switch (Data.Mode) {
                 case ColorTransferMode.Rgb:
                     UnaryPixelOps.ChannelCurve cc = new UnaryPixelOps.ChannelCurve();
                     transferCurves = new byte[][] { cc.CurveR, cc.CurveG, cc.CurveB };
@@ -104,7 +97,7 @@ namespace Pinta.Core
             int channels = transferCurves.Length;
 
             for (int channel = 0; channel < channels; channel++) {
-                SortedList<int, int> channelControlPoints = control_points[channel];
+                SortedList<int, int> channelControlPoints = Data.ControlPoints[channel];
                 IList<int> xa = channelControlPoints.Keys;
                 IList<int> ya = channelControlPoints.Values;
                 SplineInterpolator interpolator = new SplineInterpolator();
@@ -122,5 +115,25 @@ namespace Pinta.Core
             return op;
         }
 
+	}
+	
+	public class CurvesData : EffectData
+	{
+		public SortedList<int, int>[] ControlPoints { get; set; }
+		
+		public ColorTransferMode Mode { get; set; }
+		
+		public override EffectData Clone ()
+		{
+			var controlPoints = new SortedList<int, int> [ControlPoints.Length];
+			
+			for (int i = 0; i < ControlPoints.Length; i++)
+				controlPoints[i] = new SortedList<int, int> (ControlPoints[i]);
+			
+			return new CurvesData () {
+				Mode = Mode,
+				ControlPoints = controlPoints
+			};
+		}
 	}
 }

@@ -73,10 +73,16 @@ namespace Pinta
 						ColorTransferMode.Rgb : 
 						ColorTransferMode.Luminosity; }
 		}
-				
-		public CurvesDialog ()
+		
+		//TODO store data into the CurvesData object and call
+		// UpdateLivePreview ("ControlPoints"), or UpdateLivePreview ("Mode")
+		public CurvesData EffectData { get; private set; }
+		
+		public CurvesDialog (CurvesData effectData)
 		{
 			this.Build ();
+			
+			EffectData = effectData;
 		
 			drawing.DoubleBuffered = true;
 			
@@ -92,7 +98,15 @@ namespace Pinta
 			
 			ResetControlPoints ();
 		}
-
+		
+		private void UpdateLivePreview (string propertyName)
+		{
+			Console.WriteLine ("Update live preview.");
+			
+			if (EffectData != null)
+				EffectData.FirePropertyChanged (propertyName);
+		}		
+		
 		private void HandleCheckToggled (object o, EventArgs args)
 		{
 			InvalidateDrawing ();
