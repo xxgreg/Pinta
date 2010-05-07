@@ -237,7 +237,15 @@ namespace Pinta.Core
 		{
 			PintaCore.Layers.FinishSelection ();
 
-			ImageSurface src = PintaCore.Layers.GetClippedLayer (PintaCore.Layers.CurrentLayerIndex);
+			ImageSurface src = new ImageSurface (Cairo.Format.Argb32, PintaCore.Workspace.ImageSize.Width, PintaCore.Workspace.ImageSize.Height);
+
+			using (Cairo.Context g = new Cairo.Context (src)) {
+				g.AppendPath (PintaCore.Layers.SelectionPath);
+				g.Clip ();
+
+				g.SetSource (PintaCore.Layers.CurrentLayer.Surface);
+				g.Paint ();
+			}
 			
 			Gdk.Rectangle rect = PintaCore.Layers.SelectionPath.GetBounds ();
 			

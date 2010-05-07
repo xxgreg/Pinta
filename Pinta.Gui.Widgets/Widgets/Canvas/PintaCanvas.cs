@@ -1,4 +1,4 @@
-﻿// 
+// 
 // PintaCanvas.cs
 //  
 // Author:
@@ -148,6 +148,14 @@ namespace Pinta.Gui.Widgets
 					gr.Render (canvas, canvas_bounds.Location);
 					g.SetSourceSurface (canvas, canvas_bounds.X, canvas_bounds.Y);
 					g.Paint ();
+				}
+
+				// Experimental hacking...
+				if (PintaCore.Selection.IsSelectionActive) {
+					PintaCore.Selection.DrawWithSelectionMask (g, delegate {
+						g.SetSourceRGBA (1, 0, 0, 0.5);
+						g.Paint ();
+					});
 				}
 
 				// Selection outline

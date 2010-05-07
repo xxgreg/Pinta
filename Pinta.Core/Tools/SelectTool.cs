@@ -34,14 +34,45 @@ namespace Pinta.Core
 	{
 		protected SelectionHistoryItem hist;
 		public override Gdk.Key ShortcutKey { get { return Gdk.Key.S; } }
+
+		//protected ToolBarLabel select_combine_mode_label;
+		protected ToolBarComboBox select_combine_mode;
+		//protected ToolBarLabel select_display_style_label;
+		protected ToolBarComboBox select_display_style;
+		protected ToolBarButton select_refine_edge;
 		
 		#region ToolBar
 		// We don't want the ShapeTool's toolbar
 		protected override void BuildToolBar (Toolbar tb)
 		{
+			if (select_combine_mode == null) {
+				select_combine_mode = new ToolBarComboBox (100, 0, true, "Single", "Add", "Subtract", "Intersect");
+				select_combine_mode.ComboBox.Changed += HandleCombineModeChanged;
+			}
+
+			tb.AppendItem (select_combine_mode);
+
+			if (select_display_style == null)
+				select_display_style = new ToolBarComboBox (100, 0, true, "Outline", "Red Mask");
+
+			tb.AppendItem (select_display_style);
+
+			if (select_refine_edge == null)
+				select_refine_edge = new ToolBarButton ("Toolbar.MinusButton.png", "Refine Edge", "Refine Edge");
+
+			tb.AppendItem (select_refine_edge);
+
+		}
+
+		void HandleCombineModeChanged (object o, EventArgs e)
+		{
+			var mode = (SelectCombineMode) select_combine_mode.ComboBox.Active;
+			PintaCore.Selection.CombineMode = mode;
 		}
 		#endregion
-		
+
+		protected abstract void DoSelect (int x, int y, int width, int height);
+
 		#region Mouse Handlers
 		protected override void OnMouseDown (DrawingArea canvas, ButtonPressEventArgs args, Cairo.PointD point)
 		{
@@ -65,9 +96,15 @@ namespace Pinta.Core
 				hist.Dispose ();
 				hist = null;
 			} else {
+
+				DoSelect ((int) Math.Min (x, shape_origin.X),
+					  (int) Math.Min (y, shape_origin.Y),
+					  (int) Math.Ceiling(Math.Abs (x - shape_origin.X)),
+					  (int) Math.Ceiling(Math.Abs (y - shape_origin.Y)));
+
 				if (hist != null)
 					PintaCore.History.PushNewItem (hist);
-					
+
 				hist = null;
 			}
 

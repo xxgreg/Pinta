@@ -494,21 +494,6 @@ namespace Pinta.Core
 			
 			return surf;
 		}
-		
-		public ImageSurface GetClippedLayer (int index)
-		{
-			Cairo.ImageSurface surf = new Cairo.ImageSurface (Cairo.Format.Argb32, PintaCore.Workspace.ImageSize.Width, PintaCore.Workspace.ImageSize.Height);
-
-			using (Cairo.Context g = new Cairo.Context (surf)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.Clip ();
-
-				g.SetSource (layers[index].Surface);
-				g.Paint ();
-			}
-
-			return surf;
-		}
 		#endregion
 
 		#region Protected Methods

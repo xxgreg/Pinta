@@ -1,4 +1,4 @@
-﻿// 
+// 
 // SelectionHistoryItem.cs
 //  
 // Author:
@@ -34,6 +34,9 @@ namespace Pinta.Core
 		private Path old_path;
 		private bool show_selection;
 
+		private Mask mask;
+		private bool is_selection_active;
+
 		public override bool CausesDirty { get { return false; } }
 
 		public SelectionHistoryItem (string icon, string text) : base (icon, text)
@@ -66,6 +69,15 @@ namespace Pinta.Core
 
 			old_path = swap_path;
 			show_selection = swap_show;
+
+			var swap_mask = PintaCore.Selection.CopySelectionMask ();
+			var swap_active = PintaCore.Selection.IsSelectionActive;
+
+			PintaCore.Selection.SetSelectionMask (mask);
+			PintaCore.Selection.IsSelectionActive = is_selection_active;
+
+			mask = swap_mask;
+			is_selection_active = swap_active;
 			
 			PintaCore.Workspace.Invalidate ();
 		}
@@ -74,6 +86,9 @@ namespace Pinta.Core
 		{
 			old_path = PintaCore.Layers.SelectionPath.Clone ();
 			show_selection = PintaCore.Layers.ShowSelection;
+
+			mask = PintaCore.Selection.CopySelectionMask ();
+			is_selection_active = PintaCore.Selection.IsSelectionActive;
 		}
 	}
 }

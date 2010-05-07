@@ -44,6 +44,12 @@ namespace Pinta.Core
 		public override string StatusBarText { get { return "Click and drag to draw the outline for a selection area"; } }
 		#endregion
 
+		protected override void DoSelect (int x, int y, int width, int height)
+		{
+			PintaCore.Selection.Select (path);
+			PintaCore.Workspace.Invalidate ();
+		}
+
 		#region Mouse Handlers
 		protected override void OnMouseDown (Gtk.DrawingArea canvas, Gtk.ButtonPressEventArgs args, Cairo.PointD point)
 		{

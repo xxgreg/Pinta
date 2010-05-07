@@ -53,5 +53,13 @@ namespace Pinta.Core
 			// Add some padding for invalidation
 			return new Rectangle (r.X, r.Y, r.Width + 2, r.Height + 2);
 		}
+
+		protected override void DoSelect (int x, int y, int width, int height)
+		{
+			var rect = new Gdk.Rectangle (x, y, width, height);
+			PintaCore.Selection.Select (rect);
+			PintaCore.Workspace.Invalidate ();
+		}
+
 	}
 }

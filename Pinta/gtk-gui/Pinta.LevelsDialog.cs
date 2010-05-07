@@ -350,7 +350,7 @@ namespace Pinta {
             w24.Expand = false;
             w24.Fill = false;
             // Container child vboxOutputSpin.Gtk.Box+BoxChild
-            this.spinOutGamma = new Gtk.SpinButton(0, 100, 1);
+            this.spinOutGamma = new Gtk.SpinButton(0, 100, 0.1);
             this.spinOutGamma.CanFocus = true;
             this.spinOutGamma.Name = "spinOutGamma";
             this.spinOutGamma.Adjustment.PageIncrement = 10;

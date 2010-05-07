@@ -74,21 +74,23 @@ namespace Pinta.Core
 			ImageSurface surf = PintaCore.Layers.CurrentLayer.Surface;
 			
 			using (Context g = new Context (surf)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
+				//g.AppendPath (PintaCore.Layers.SelectionPath);
 				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
+				//g.Clip ();
+				PintaCore.Selection.DrawWithSelectionMask(g, delegate {
 
-				g.Antialias = Antialias.Subpixel;
-				
-				g.MoveTo (last_point.X, last_point.Y);
-				g.LineTo (x, y);
+					//g.Antialias = Antialias.Subpixel;
+					
+					g.MoveTo (last_point.X, last_point.Y);
+					g.LineTo (x, y);
 
-				g.Color = tool_color;
-				g.LineWidth = BrushWidth;
-				g.LineJoin = LineJoin.Round;
-				g.LineCap = LineCap.Round;
-				
-				g.Stroke ();
+					g.Color = tool_color;
+					g.LineWidth = BrushWidth;
+					g.LineJoin = LineJoin.Round;
+					g.LineCap = LineCap.Round;
+
+					g.Stroke ();
+				});
 			}
 			
 			Gdk.Rectangle r = GetRectangleFromPoints (last_point, new Point (x, y));
