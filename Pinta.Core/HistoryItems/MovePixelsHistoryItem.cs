@@ -1,4 +1,4 @@
-﻿// 
+// 
 // MovePixelsHistoryItem.cs
 //  
 // Author:
@@ -29,10 +29,10 @@ using Cairo;
 
 namespace Pinta.Core
 {
-	public class MovePixelsHistoryItem : BaseHistoryItem
+	public class MovePixelsHistoryItem : SimpleHistoryItem
 	{
-		private Path old_path;
-		private PointD old_offset;
+		private Mask mask;
+		private bool is_selection_active;
 
 		public MovePixelsHistoryItem (string icon, string text) : base (icon, text)
 		{
@@ -41,37 +41,37 @@ namespace Pinta.Core
 		public override void Undo ()
 		{
 			Swap ();
+			base.Undo ();
 		}
 
 		public override void Redo ()
 		{
 			Swap ();
+			base.Redo ();
 		}
 
 		public override void Dispose ()
 		{
-			if (old_path != null)
-				(old_path as IDisposable).Dispose ();
+			base.Dispose ();
+		}
+
+		public void TakeSnapshot ()
+		{
+			TakeSnapshotOfLayer (PintaCore.Layers.CurrentLayerIndex);
+			mask = PintaCore.Selection.CopySelectionMask ();
+			is_selection_active = PintaCore.Selection.IsSelectionActive;
 		}
 
 		private void Swap ()
 		{
-			Path swap_path = PintaCore.Layers.SelectionPath;
-			PointD swap_offset = PintaCore.Layers.SelectionLayer.Offset;
+			var swap_mask = PintaCore.Selection.CopySelectionMask ();
+			var swap_active = PintaCore.Selection.IsSelectionActive;
 
-			PintaCore.Layers.SelectionPath = old_path;
-			PintaCore.Layers.SelectionLayer.Offset = old_offset;
+			PintaCore.Selection.SetSelectionMask (mask);
+			PintaCore.Selection.IsSelectionActive = is_selection_active;
 
-			old_path = swap_path;
-			old_offset = swap_offset;
-			
-			PintaCore.Workspace.Invalidate ();
-		}
-		
-		public void TakeSnapshot ()
-		{
-			old_path = PintaCore.Layers.SelectionPath.Clone ();
-			old_offset = PintaCore.Layers.SelectionLayer.Offset;
+			mask = swap_mask;
+			is_selection_active = swap_active;
 		}
 	}
 }

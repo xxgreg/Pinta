@@ -66,18 +66,24 @@ namespace Pinta.Core
 
 			PintaCore.Selection.OffsetX = (int) (point.X - origin_offset.X);
 			PintaCore.Selection.OffsetY = (int) (point.Y - origin_offset.Y);
-			
-			(o as Gtk.DrawingArea).GdkWindow.Invalidate ();
+
+			PintaCore.Workspace.Invalidate ();
 		}
 
 		protected override void OnMouseUp (Gtk.DrawingArea canvas, Gtk.ButtonReleaseEventArgs args, Cairo.PointD point)
 		{
 			is_dragging = false;
 
-			PintaCore.Selection.ProcessMove ();
+			if (PintaCore.Selection.OffsetX != 0
+			    || PintaCore.Selection.OffsetY != 0) {
 
-			if (hist != null)
-				PintaCore.History.PushNewItem (hist);
+				PintaCore.Selection.ProcessMove ();
+
+				if (hist != null)
+					PintaCore.History.PushNewItem (hist);
+
+				PintaCore.Workspace.Invalidate ();
+			}
 
 			hist = null;
 		}

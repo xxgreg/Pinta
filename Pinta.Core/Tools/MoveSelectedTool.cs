@@ -52,71 +52,75 @@ namespace Pinta.Core
 		#region Mouse Handlers
 		protected override void OnMouseDown (Gtk.DrawingArea canvas, Gtk.ButtonPressEventArgs args, Cairo.PointD point)
 		{
+			if (!PintaCore.Selection.IsSelectionActive)
+				return;
+
 			origin_offset = point;
 			is_dragging = true;
 
 			hist = new MovePixelsHistoryItem (Icon, Name);
 			hist.TakeSnapshot ();
-			
-			if (!PintaCore.Layers.ShowSelectionLayer) {
-				// Copy the selection to the temp layer
-				PintaCore.Layers.CreateSelectionLayer ();
-				PintaCore.Layers.ShowSelectionLayer = true;
-				
-				using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.SelectionLayer.Surface)) {
-					g.AppendPath (PintaCore.Layers.SelectionPath);
-					g.FillRule = FillRule.EvenOdd;
+
+			// Copy from current layer to the temporary selection layer.
+			PintaCore.Layers.CreateSelectionLayer ();
+			PintaCore.Layers.ShowSelectionLayer = true;
+
+			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.SelectionLayer.Surface)) {
+				PintaCore.Selection.DrawWithSelectionMask(g, delegate {
 					g.SetSource (PintaCore.Layers.CurrentLayer.Surface);
-					g.Clip ();
 					g.Paint ();
-				}			
-				
-				Cairo.ImageSurface surf = PintaCore.Layers.CurrentLayer.Surface;
-				
-				using (Cairo.Context g = new Cairo.Context (surf)) {
-					g.AppendPath (PintaCore.Layers.SelectionPath);
-					g.FillRule = FillRule.EvenOdd;
-					g.Operator = Cairo.Operator.Clear;
-					g.Fill ();
-				}
+				});
+			}
+
+			// Clear the current layer under the selection.
+			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.CurrentLayer.Surface)) {
+				PintaCore.Selection.ClearSelection (g);
 			}
 			
-			canvas.GdkWindow.Invalidate ();
+			PintaCore.Workspace.Invalidate ();
 		}
 
 		protected override void OnMouseMove (object o, Gtk.MotionNotifyEventArgs args, Cairo.PointD point)
 		{
 			if (!is_dragging)
 				return;
-			
-			PointD new_offset = new PointD (point.X, point.Y);
-			
-			double dx = origin_offset.X - new_offset.X;
-			double dy = origin_offset.Y - new_offset.Y;
 
-			Path path = PintaCore.Layers.SelectionPath;
-			
-			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				g.AppendPath (path);
-				g.Translate (dx, dy);
-				PintaCore.Layers.SelectionPath = g.CopyPath ();
-			}
+			var x = (int) (point.X - origin_offset.X);
+			var y = (int) (point.Y - origin_offset.Y);
 
-			(path as IDisposable).Dispose ();
+			PintaCore.Selection.OffsetX = x;
+			PintaCore.Selection.OffsetY = y;
+			PintaCore.Layers.SelectionLayer.Offset = new PointD (x, y);
 
-			PintaCore.Layers.SelectionLayer.Offset = new PointD (PintaCore.Layers.SelectionLayer.Offset.X - dx, PintaCore.Layers.SelectionLayer.Offset.Y - dy);
-			
-			origin_offset = new_offset;
-			
-			(o as Gtk.DrawingArea).GdkWindow.Invalidate ();
+			PintaCore.Workspace.Invalidate ();
 		}
 
 		protected override void OnMouseUp (Gtk.DrawingArea canvas, Gtk.ButtonReleaseEventArgs args, Cairo.PointD point)
 		{
 			is_dragging = false;
 
-			if (hist != null)
-				PintaCore.History.PushNewItem (hist);
+			if (PintaCore.Selection.OffsetX != 0
+			    || PintaCore.Selection.OffsetY != 0) {
+
+				PintaCore.Selection.ProcessMove ();
+
+				if (hist != null)
+					PintaCore.History.PushNewItem (hist);
+
+				PintaCore.Workspace.Invalidate ();
+			}
+
+			// Paint selection in new position.
+			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.CurrentLayer.Surface)) {
+				var sl = PintaCore.Layers.SelectionLayer;
+				var x = (int) (point.X - origin_offset.X);
+				var y = (int) (point.Y - origin_offset.Y);
+				g.SetSourceSurface (sl.Surface, x, y);
+				g.Paint ();
+			}
+
+			PintaCore.Layers.DestroySelectionLayer ();
+			PintaCore.Layers.ShowSelectionLayer = false;
 
 			hist = null;
 		}
@@ -125,8 +129,6 @@ namespace Pinta.Core
 		protected override void OnDeactivated ()
 		{
 			base.OnDeactivated ();
-			
-			PintaCore.Layers.FinishSelection ();
 		}
 	}
 }
