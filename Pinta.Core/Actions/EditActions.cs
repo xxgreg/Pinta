@@ -71,7 +71,7 @@ namespace Pinta.Core
 			Undo.Sensitive = false;
 			Redo.Sensitive = false;
 			PasteIntoNewImage.Sensitive = false;
-			InvertSelection.Sensitive = false;
+			InvertSelection.Sensitive = true;
 			Deselect.Sensitive = false;
 			EraseSelection.Sensitive = false;
 			FillSelection.Sensitive = false;
@@ -93,7 +93,7 @@ namespace Pinta.Core
 			menu.AppendSeparator ();
 			menu.Append (EraseSelection.CreateAcceleratedMenuItem (Gdk.Key.Delete, Gdk.ModifierType.None));
 			menu.Append (FillSelection.CreateAcceleratedMenuItem (Gdk.Key.BackSpace, Gdk.ModifierType.None));
-			//menu.Append (InvertSelection.CreateAcceleratedMenuItem (Gdk.Key.I, Gdk.ModifierType.ControlMask));
+			menu.Append (InvertSelection.CreateAcceleratedMenuItem (Gdk.Key.I, Gdk.ModifierType.ControlMask));
 			menu.Append (SelectAll.CreateAcceleratedMenuItem (Gdk.Key.A, Gdk.ModifierType.ControlMask));
 			menu.Append (Deselect.CreateAcceleratedMenuItem (Gdk.Key.D, Gdk.ModifierType.ControlMask));
 		}
@@ -110,6 +110,7 @@ namespace Pinta.Core
 			EraseSelection.Activated += HandlePintaCoreActionsEditEraseSelectionActivated;
 			SelectAll.Activated += HandlePintaCoreActionsEditSelectAllActivated;
 			FillSelection.Activated += HandlePintaCoreActionsEditFillSelectionActivated;
+			InvertSelection.Activated += HandlePintaCoreActionsInvertSelectionActivated;
 			PasteIntoNewLayer.Activated += HandlerPintaCoreActionsEditPasteIntoNewLayerActivated;
 			Paste.Activated += HandlerPintaCoreActionsEditPasteActivated;
 			Copy.Activated += HandlerPintaCoreActionsEditCopyActivated;
@@ -117,6 +118,8 @@ namespace Pinta.Core
 			Redo.Activated += HandlerPintaCoreActionsEditRedoActivated;
 			Cut.Activated += HandlerPintaCoreActionsEditCutActivated;
 		}
+
+
 		#endregion
 
 		#region Action Handlers
@@ -135,6 +138,17 @@ namespace Pinta.Core
 			
 			PintaCore.Workspace.Invalidate ();
 			PintaCore.History.PushNewItem (new SimpleHistoryItem ("Menu.Edit.FillSelection.png", Mono.Unix.Catalog.GetString ("Fill Selection"), old, PintaCore.Layers.CurrentLayerIndex));
+		}
+
+		void HandlePintaCoreActionsInvertSelectionActivated (object sender, EventArgs e)
+		{
+			SelectionHistoryItem hist = new SelectionHistoryItem ("Menu.Edit.InvertSelection.png", Mono.Unix.Catalog.GetString ("Invert Selection"));
+			hist.TakeSnapshot ();
+
+			PintaCore.Selection.Invert ();
+
+			PintaCore.History.PushNewItem (hist);
+			PintaCore.Workspace.Invalidate ();
 		}
 
 		private void HandlePintaCoreActionsEditSelectAllActivated (object sender, EventArgs e)
@@ -199,6 +213,8 @@ namespace Pinta.Core
 
 			// Make new layer the current layer
 			PintaCore.Layers.SetCurrentLayer (l);
+
+			PintaCore.Selection.Deselect ();
 			
 			PintaCore.Workspace.Invalidate ();
 
@@ -218,15 +234,16 @@ namespace Pinta.Core
 			if (image == null)
 				return;
 
-			Path p;
+			Path p = null;
 			
 			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				g.DrawPixbuf (image, new Cairo.Point (0, 0));
-				p = g.CreateRectanglePath (new Rectangle (0, 0, image.Width, image.Height));
+				PintaCore.Selection.DrawWithSelectionMask(g, delegate {
+					g.DrawPixbuf (image, new Cairo.Point (0, 0));
+				});
+
 			}
 
-			PintaCore.Layers.SelectionPath = p;
-			PintaCore.Layers.ShowSelection = true;
+			PintaCore.Selection.SetSelection (new Gdk.Rectangle (0, 0, image.Width, image.Height));
 			
 			PintaCore.Workspace.Invalidate ();
 			
@@ -240,11 +257,10 @@ namespace Pinta.Core
 			ImageSurface src = new ImageSurface (Cairo.Format.Argb32, PintaCore.Workspace.ImageSize.Width, PintaCore.Workspace.ImageSize.Height);
 
 			using (Cairo.Context g = new Cairo.Context (src)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.Clip ();
-
-				g.SetSource (PintaCore.Layers.CurrentLayer.Surface);
-				g.Paint ();
+				PintaCore.Selection.DrawWithSelectionMask(g, delegate {
+					g.SetSource (PintaCore.Layers.CurrentLayer.Surface);
+					g.Paint ();
+				});
 			}
 			
 			Gdk.Rectangle rect = PintaCore.Layers.SelectionPath.GetBounds ();
@@ -274,10 +290,7 @@ namespace Pinta.Core
 			Cairo.ImageSurface old = PintaCore.Layers.CurrentLayer.Surface.Clone ();
 
 			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = Cairo.FillRule.EvenOdd;
-				g.Operator = Cairo.Operator.Clear;
-				g.Fill ();
+				PintaCore.Selection.ClearSelection (g);
 			}
 
 			PintaCore.Workspace.Invalidate ();

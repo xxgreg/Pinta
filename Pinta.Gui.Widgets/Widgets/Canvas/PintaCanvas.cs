@@ -151,11 +151,19 @@ namespace Pinta.Gui.Widgets
 				}
 
 				// Experimental hacking...
+				// Draw A8 selection.
 				if (PintaCore.Selection.IsSelectionActive) {
-					PintaCore.Selection.DrawWithSelectionMask (g, delegate {
-						g.SetSourceRGBA (1, 0, 0, 0.5);
+					g.Save ();
+
+					g.Translate (PintaCore.Selection.OffsetX, PintaCore.Selection.OffsetY);
+					g.Scale (scale, scale);
+
+					PintaCore.Selection.DrawWithInverseSelectionMask (g, delegate {
+						g.SetSourceRGBA (1, 0, 0, 0.3);
 						g.Paint ();
 					});
+
+					g.Restore ();
 				}
 
 				// Selection outline

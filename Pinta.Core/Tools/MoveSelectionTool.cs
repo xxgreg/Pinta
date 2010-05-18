@@ -63,23 +63,9 @@ namespace Pinta.Core
 		{
 			if (!is_dragging)
 				return;
-			
-			PointD new_offset = point;
-			
-			double dx = origin_offset.X - new_offset.X;
-			double dy = origin_offset.Y - new_offset.Y;
-			
-			using (Cairo.Context g = new Cairo.Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				Path old = PintaCore.Layers.SelectionPath;
-				g.FillRule = FillRule.EvenOdd;
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.Translate (dx, dy);
-				PintaCore.Layers.SelectionPath = g.CopyPath ();
-				(old as IDisposable).Dispose ();
-			}
 
-			origin_offset = new_offset;
-			PintaCore.Layers.ShowSelection = true;
+			PintaCore.Selection.OffsetX = (int) (point.X - origin_offset.X);
+			PintaCore.Selection.OffsetY = (int) (point.Y - origin_offset.Y);
 			
 			(o as Gtk.DrawingArea).GdkWindow.Invalidate ();
 		}
@@ -87,6 +73,8 @@ namespace Pinta.Core
 		protected override void OnMouseUp (Gtk.DrawingArea canvas, Gtk.ButtonReleaseEventArgs args, Cairo.PointD point)
 		{
 			is_dragging = false;
+
+			PintaCore.Selection.ProcessMove ();
 
 			if (hist != null)
 				PintaCore.History.PushNewItem (hist);

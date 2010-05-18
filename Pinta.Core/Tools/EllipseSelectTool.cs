@@ -43,8 +43,6 @@ namespace Pinta.Core
 
 		protected override void DoSelect (int x, int y, int width, int height)
 		{
-			// Create elliptical path.
-			Cairo.Path path = null;
 			using (var s = new ImageSurface (Format.A1, 1, 1))
 			using (var cr = new Cairo.Context (s)) {
 				cr.Save ();
@@ -52,10 +50,11 @@ namespace Pinta.Core
 				cr.Scale (width / 2.0, height / 2.0);
 				cr.Arc (0, 0, 1, 0, 2 * Math.PI);
 				cr.Restore ();
-				path = cr.CopyPath ();
+				using (var path = cr.CopyPath ()) {
+					PintaCore.Selection.Select (path);
+				}
 			}
 
-			PintaCore.Selection.Select (path);
 			PintaCore.Workspace.Invalidate ();
 		}
 
