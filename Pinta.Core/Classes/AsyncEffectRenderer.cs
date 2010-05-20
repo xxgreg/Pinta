@@ -35,7 +35,7 @@ using Debug = System.Diagnostics.Debug;
 
 namespace Pinta.Core
 {
-	
+
 	// Only call methods on this class from a single thread (The UI thread).
 	internal abstract class AsyncEffectRenderer
 	{

@@ -166,6 +166,10 @@ namespace Pinta.Gui.Widgets
 					});
 
 					g.Restore ();
+
+					g.Save ();
+					PintaCore.Selection.DrawSelectionOutline (g, scale);
+					g.Restore ();
 				}
 
 				// Selection outline

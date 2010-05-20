@@ -162,6 +162,7 @@
     <Compile Include="Classes\GradientRenderer.cs" />
     <Compile Include="Classes\GradientRenderers.cs" />
     <Compile Include="Managers\SelectionManager.cs" />
+    <Compile Include="Classes\EdgeExtractor.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

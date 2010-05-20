@@ -1,4 +1,4 @@
-﻿// 
+// 
 // ResizeHistoryItem.cs
 //  
 // Author:
@@ -29,6 +29,7 @@ using System.Collections.Generic;
 
 namespace Pinta.Core
 {
+	//TODO properly capture new selection.
 	public class ResizeHistoryItem : CompoundHistoryItem
 	{
 		private int old_width;

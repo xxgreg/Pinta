@@ -157,9 +157,11 @@ namespace Pinta.Core
 
 		private void HandlePintaCoreActionsImageCropToSelectionActivated (object sender, EventArgs e)
 		{
-			PintaCore.Layers.FinishSelection ();
 
-			Gdk.Rectangle rect = PintaCore.Layers.SelectionPath.GetBounds ();
+			if (!PintaCore.Selection.IsSelectionActive)
+				return;
+
+			var rect = PintaCore.Selection.Bounds;
 
 			int width = rect.Width;
 			int height = rect.Height;
@@ -178,7 +180,7 @@ namespace Pinta.Core
 
 			PintaCore.History.PushNewItem (hist);
 
-			PintaCore.Layers.ResetSelectionPath ();
+			PintaCore.Selection.IsSelectionActive = false;
 			PintaCore.Workspace.Invalidate ();
 		}
 		#endregion
