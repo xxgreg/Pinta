@@ -35,11 +35,8 @@ namespace Pinta.Core
 		protected SelectionHistoryItem hist;
 		public override Gdk.Key ShortcutKey { get { return Gdk.Key.S; } }
 
-		//protected ToolBarLabel select_combine_mode_label;
 		protected ToolBarComboBox select_combine_mode;
-		//protected ToolBarLabel select_display_style_label;
 		protected ToolBarComboBox select_display_style;
-		protected ToolBarButton select_refine_edge;
 		
 		#region ToolBar
 		// We don't want the ShapeTool's toolbar
@@ -52,16 +49,22 @@ namespace Pinta.Core
 
 			tb.AppendItem (select_combine_mode);
 
-			if (select_display_style == null)
+			if (select_display_style == null) {
 				select_display_style = new ToolBarComboBox (100, 0, true, "Outline", "Red Mask");
+				select_display_style.ComboBox.Changed += HandleDisplayStyleChanged;
+			}
 
 			tb.AppendItem (select_display_style);
 
-			if (select_refine_edge == null)
-				select_refine_edge = new ToolBarButton ("Toolbar.MinusButton.png", "Refine Edge", "Refine Edge");
+			SyncToolbar ();
+		}
 
-			tb.AppendItem (select_refine_edge);
-
+		void SyncToolbar ()
+		{
+			if (select_combine_mode != null && select_display_style != null) {
+				select_combine_mode.ComboBox.Active = (int) PintaCore.Selection.CombineMode;
+				select_display_style.ComboBox.Active = (int) PintaCore.Selection.DisplayStyle;
+			}
 		}
 
 		void HandleCombineModeChanged (object o, EventArgs e)
@@ -69,7 +72,20 @@ namespace Pinta.Core
 			var mode = (SelectCombineMode) select_combine_mode.ComboBox.Active;
 			PintaCore.Selection.CombineMode = mode;
 		}
+
+		void HandleDisplayStyleChanged (object o, EventArgs e)
+		{
+			var style = (SelectionDisplayStyle) select_display_style.ComboBox.Active;
+			PintaCore.Selection.DisplayStyle = style;
+			PintaCore.Workspace.Invalidate ();
+		}
 		#endregion
+
+		protected override void OnActivated ()
+		{
+			base.OnActivated ();
+			SyncToolbar ();
+		}
 
 		protected abstract void DoSelect (int x, int y, int width, int height);
 
@@ -109,6 +125,11 @@ namespace Pinta.Core
 			}
 
 			is_drawing = false;
+
+			if (PintaCore.Selection.WorkingSelection != null) {
+				PintaCore.Selection.WorkingSelection.Dispose ();
+				PintaCore.Selection.WorkingSelection = null;
+			}
 		}
 		
 		protected override void OnMouseMove (object o, MotionNotifyEventArgs args, Cairo.PointD point)
@@ -118,8 +139,6 @@ namespace Pinta.Core
 
 			double x = Utility.Clamp (point.X, 0, PintaCore.Workspace.ImageSize.Width - 1);
 			double y = Utility.Clamp (point.Y, 0, PintaCore.Workspace.ImageSize.Height - 1);
-
-			PintaCore.Layers.ShowSelection = true;
 
 			Rectangle dirty = DrawShape (PointsToRectangle (shape_origin, new PointD (x, y), (args.Event.State & Gdk.ModifierType.ShiftMask) == Gdk.ModifierType.ShiftMask), PintaCore.Layers.SelectionLayer);
 

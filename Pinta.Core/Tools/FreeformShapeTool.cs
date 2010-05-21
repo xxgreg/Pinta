@@ -123,39 +123,38 @@ namespace Pinta.Core
 			ImageSurface surf = PintaCore.Layers.ToolLayer.Surface;
 
 			using (Context g = new Context (surf)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
 
-				g.Antialias = Antialias.Subpixel;
-
-				if (path != null) {
-					g.AppendPath (path);
-					(path as IDisposable).Dispose ();
-				}
+					g.Antialias = Antialias.Subpixel;
+	
+					if (path != null) {
+						g.AppendPath (path);
+						(path as IDisposable).Dispose ();
+					}
+						
+					g.LineTo (x, y);
+	
+					path = g.CopyPath ();
 					
-				g.LineTo (x, y);
-
-				path = g.CopyPath ();
-				
-				g.ClosePath ();
-				g.LineWidth = BrushWidth;
-				g.LineJoin = LineJoin.Round;
-				g.LineCap = LineCap.Round;
-				g.FillRule = FillRule.EvenOdd;
-
-				if (FillShape && StrokeShape) {
-					g.Color = fill_color;
-					g.FillPreserve ();
-					g.Color = outline_color;
-					g.Stroke ();
-				} else if (FillShape) {
-					g.Color = outline_color;
-					g.Fill ();
-				} else {
-					g.Color = outline_color;
-					g.Stroke ();
-				}
+					g.ClosePath ();
+					g.LineWidth = BrushWidth;
+					g.LineJoin = LineJoin.Round;
+					g.LineCap = LineCap.Round;
+					g.FillRule = FillRule.EvenOdd;
+	
+					if (FillShape && StrokeShape) {
+						g.Color = fill_color;
+						g.FillPreserve ();
+						g.Color = outline_color;
+						g.Stroke ();
+					} else if (FillShape) {
+						g.Color = outline_color;
+						g.Fill ();
+					} else {
+						g.Color = outline_color;
+						g.Stroke ();
+					}
+				});
 			}
 
 			PintaCore.Workspace.Invalidate ();
@@ -176,36 +175,36 @@ namespace Pinta.Core
 			ImageSurface surf = PintaCore.Layers.CurrentLayer.Surface;
 
 			using (Context g = new Context (surf)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
 
-				g.Antialias = Antialias.Subpixel;
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
 
-				if (path != null) {
-					g.AppendPath (path);
-					(path as IDisposable).Dispose ();
-					path = null;
-				}
-
-				g.ClosePath ();
-				g.LineWidth = BrushWidth;
-				g.LineJoin = LineJoin.Round;
-				g.LineCap = LineCap.Round;
-				g.FillRule = FillRule.EvenOdd;
-
-				if (FillShape && StrokeShape) {
-					g.Color = fill_color;
-					g.FillPreserve ();
-					g.Color = outline_color;
-					g.Stroke ();
-				} else if (FillShape) {
-					g.Color = outline_color;
-					g.Fill ();
-				} else {
-					g.Color = outline_color;
-					g.Stroke ();
-				}
+					g.Antialias = Antialias.Subpixel;
+	
+					if (path != null) {
+						g.AppendPath (path);
+						(path as IDisposable).Dispose ();
+						path = null;
+					}
+	
+					g.ClosePath ();
+					g.LineWidth = BrushWidth;
+					g.LineJoin = LineJoin.Round;
+					g.LineCap = LineCap.Round;
+					g.FillRule = FillRule.EvenOdd;
+	
+					if (FillShape && StrokeShape) {
+						g.Color = fill_color;
+						g.FillPreserve ();
+						g.Color = outline_color;
+						g.Stroke ();
+					} else if (FillShape) {
+						g.Color = outline_color;
+						g.Fill ();
+					} else {
+						g.Color = outline_color;
+						g.Stroke ();
+					}
+				});
 			}
 
 			PintaCore.Workspace.Invalidate ();

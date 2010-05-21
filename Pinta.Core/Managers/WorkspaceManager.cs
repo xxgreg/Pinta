@@ -199,7 +199,7 @@ namespace Pinta.Core
 			
 			PintaCore.History.PushNewItem (hist);
 			
-			PintaCore.Layers.ResetSelectionPath ();
+			PintaCore.Selection.Deselect ();
 			PintaCore.Workspace.Invalidate ();
 		}
 		
@@ -223,7 +223,7 @@ namespace Pinta.Core
 
 			PintaCore.History.PushNewItem (hist);
 
-			PintaCore.Layers.ResetSelectionPath ();
+			PintaCore.Selection.Deselect ();
 			PintaCore.Workspace.Invalidate ();
 		}
 		

@@ -81,8 +81,6 @@ namespace Pinta.Core
 				this.combineMode = CombineMode.Replace;
 
 			base.OnMouseDown (canvas, args, point);
-
-			PintaCore.Layers.ShowSelection = true;
 		}
 
 		protected override void OnFillRegionComputed (Point[][] polygonSet)
@@ -90,29 +88,25 @@ namespace Pinta.Core
 			SelectionHistoryItem undoAction = new SelectionHistoryItem (this.Icon, this.Name);
 			undoAction.TakeSnapshot ();
 
-			Path path = PintaCore.Layers.SelectionPath;
-
 			using (Context g = new Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				PintaCore.Layers.SelectionPath = g.CreatePolygonPath (polygonSet);
+				PintaCore.Selection.Select (g.CreatePolygonPath (polygonSet));
 
-				switch (combineMode) {
-					case CombineMode.Union:
-						g.AppendPath (path);
-						break;
-					case CombineMode.Xor:
-						//not supported
-						break;
-					case CombineMode.Exclude:
-						//not supported
-						break;
-					case CombineMode.Replace:
-						//do nothing
-						break;
-				}
+//				switch (combineMode) {
+//					case CombineMode.Union:
+//						g.AppendPath (path);
+//						break;
+//					case CombineMode.Xor:
+//						//not supported
+//						break;
+//					case CombineMode.Exclude:
+//						//not supported
+//						break;
+//					case CombineMode.Replace:
+//						//do nothing
+//						break;
+//				}
 
 			}
-
-			(path as IDisposable).Dispose ();
 
 			//Selection.PerformChanging();
 			//Selection.SetContinuation(polygonSet, this.combineMode);

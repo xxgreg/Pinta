@@ -170,7 +170,6 @@ namespace Pinta.Core
 			hist.Icon = "Menu.Image.Crop.png";
 			hist.Text = "Crop to Selection";
 			hist.TakeSnapshotOfImage ();
-			hist.RestorePath = PintaCore.Layers.SelectionPath.Clone ();
 
 			PintaCore.Workspace.ImageSize = new Gdk.Size (width, height);
 			PintaCore.Workspace.CanvasSize = new Gdk.Size (width, height);
@@ -180,7 +179,7 @@ namespace Pinta.Core
 
 			PintaCore.History.PushNewItem (hist);
 
-			PintaCore.Selection.IsSelectionActive = false;
+			PintaCore.Selection.Deselect ();
 			PintaCore.Workspace.Invalidate ();
 		}
 		#endregion

@@ -98,21 +98,20 @@ namespace Pinta.Core
 
 		protected override Rectangle DrawShape (Rectangle rect, Layer l)
 		{
-			Rectangle dirty;
+			Rectangle dirty = new Rectangle (0, 0, 0, 0);
 			
 			using (Context g = new Context (l.Surface)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
 
-				g.Antialias = Antialias.Subpixel;
-
-				if (FillShape && StrokeShape)
-					dirty = g.FillStrokedRoundedRectangle (rect, Radius, fill_color, outline_color, BrushWidth);
-				else if (FillShape)
-					dirty = g.FillRoundedRectangle (rect, Radius, outline_color);
-				else
-					dirty = g.DrawRoundedRectangle (rect, Radius, outline_color, BrushWidth);
+					g.Antialias = Antialias.Subpixel;
+	
+					if (FillShape && StrokeShape)
+						dirty = g.FillStrokedRoundedRectangle (rect, Radius, fill_color, outline_color, BrushWidth);
+					else if (FillShape)
+						dirty = g.FillRoundedRectangle (rect, Radius, outline_color);
+					else
+						dirty = g.DrawRoundedRectangle (rect, Radius, outline_color, BrushWidth);
+				});
 			}
 			
 			return dirty;

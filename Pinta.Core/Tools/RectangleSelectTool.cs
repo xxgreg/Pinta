@@ -43,12 +43,13 @@ namespace Pinta.Core
 
 		protected override Rectangle DrawShape (Rectangle r, Layer l)
 		{
-			Path path = PintaCore.Layers.SelectionPath;
+			var path = PintaCore.Selection.WorkingSelection;
 			
 			using (Context g = new Context (l.Surface))
-				PintaCore.Layers.SelectionPath = g.CreateRectanglePath (r);
-			
-			(path as IDisposable).Dispose ();
+				PintaCore.Selection.WorkingSelection = g.CreateRectanglePath (r);
+
+			if (path != null)
+				path.Dispose ();
 			
 			// Add some padding for invalidation
 			return new Rectangle (r.X, r.Y, r.Width + 2, r.Height + 2);

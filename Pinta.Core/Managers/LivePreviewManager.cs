@@ -42,7 +42,7 @@ namespace Pinta.Core
 		bool live_preview_enabled;		
 		Layer layer;
 		BaseEffect effect;
-		Cairo.Path selection_path;
+		bool use_selection_mask;
 		
 		bool apply_live_preview_flag;
 		bool cancel_live_preview_flag;
@@ -82,9 +82,17 @@ namespace Pinta.Core
 			
 			// Handle selection path.
 			PintaCore.Layers.FinishSelection ();
-			selection_path = (PintaCore.Layers.ShowSelection) ? PintaCore.Layers.SelectionPath : null;
-			render_bounds = selection_path.GetBounds ();
-			render_bounds = PintaCore.Workspace.ClampToImageSize (render_bounds);			
+			if (PintaCore.Selection.IsSelectionActive) {
+				use_selection_mask = true;
+				render_bounds = PintaCore.Selection.Bounds;
+				render_bounds = PintaCore.Workspace.ClampToImageSize (render_bounds);
+			} else {
+				use_selection_mask = false;
+				render_bounds = new Gdk.Rectangle(0,
+				                                  0,
+								  PintaCore.Workspace.ImageSize.Width,
+				                                  PintaCore.Workspace.ImageSize.Height);
+			}
 									
 			//TODO Use the current tool layer instead.
 			live_preview_surface = new Cairo.ImageSurface (Cairo.Format.Argb32,
@@ -140,27 +148,20 @@ namespace Pinta.Core
 			// TODO remove seam around selection during live preview.
 			
 			ctx.Save ();
-			if (selection_path != null) {
+			if (use_selection_mask) {
 				
 				// Paint area outsize of the selection path, with the pre-effect image.
-				var imageSize = PintaCore.Workspace.ImageSize;
-				ctx.Rectangle (0, 0, imageSize.Width, imageSize.Height);
-				ctx.AppendPath (selection_path);
-				ctx.Clip ();
-				ctx.SetSourceSurface (layer.Surface, (int)layer.Offset.X, (int)layer.Offset.Y);
-				ctx.PaintWithAlpha (opacity);
-				ctx.ResetClip ();
+				PintaCore.Selection.DrawWithInverseSelectionMask (ctx, delegate {
+					ctx.SetSourceSurface (layer.Surface, (int)layer.Offset.X, (int)layer.Offset.Y);
+					ctx.PaintWithAlpha (opacity);
+					ctx.ResetClip ();
+				});
 				
 				// Paint area inside the selection path, with the post-effect image.
-				ctx.AppendPath (selection_path);
-				ctx.Clip ();
-				
-				ctx.SetSourceSurface (live_preview_surface, (int)layer.Offset.X, (int)layer.Offset.Y);
-				ctx.PaintWithAlpha (opacity);
-				
-				ctx.AppendPath (selection_path);
-				ctx.FillRule = Cairo.FillRule.EvenOdd;
-				ctx.Clip ();			
+				PintaCore.Selection.DrawWithSelectionMask (ctx, delegate {
+					ctx.SetSourceSurface (live_preview_surface, (int)layer.Offset.X, (int)layer.Offset.Y);
+					ctx.PaintWithAlpha (opacity);
+				});
 			} else {
 				
 				ctx.SetSourceSurface (live_preview_surface, (int)layer.Offset.X, (int)layer.Offset.Y);
@@ -237,18 +238,15 @@ namespace Pinta.Core
 			
 			using (var ctx = new Cairo.Context (layer.Surface)) {
 				
-				ctx.Save ();
-				ctx.AppendPath (PintaCore.Layers.SelectionPath);
-				ctx.FillRule = Cairo.FillRule.EvenOdd;
-				ctx.Clip ();				
+				PintaCore.Selection.DrawWithSelectionMask (ctx, delegate {
 			
-				ctx.Operator = Cairo.Operator.Clear;
-				ctx.Paint ();
-				ctx.Operator = Cairo.Operator.Over;
-				
-				ctx.SetSourceSurface (live_preview_surface, (int)layer.Offset.X, (int)layer.Offset.Y);
-				ctx.Paint ();
-				ctx.Restore ();
+					ctx.Operator = Cairo.Operator.Clear;
+					ctx.Paint ();
+					ctx.Operator = Cairo.Operator.Over;
+					
+					ctx.SetSourceSurface (live_preview_surface, (int)layer.Offset.X, (int)layer.Offset.Y);
+					ctx.Paint ();
+				});
 			}
 			
 			PintaCore.History.PushNewItem (item);

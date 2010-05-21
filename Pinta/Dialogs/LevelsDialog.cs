@@ -113,7 +113,7 @@ namespace Pinta
 		private void UpdateInputHistogram ()
 		{
 			ImageSurface surface = PintaCore.Layers.CurrentLayer.Surface;
-			Gdk.Rectangle rect =  PintaCore.Layers.SelectionPath.GetBounds ();
+			Gdk.Rectangle rect =  PintaCore.Selection.Bounds;
 			histogramInput.Histogram.UpdateHistogram (surface, rect);
 			UpdateOutputHistogram ();
 		}

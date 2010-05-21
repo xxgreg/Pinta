@@ -137,7 +137,7 @@ namespace Pinta
 				PintaCore.Layers.Clear ();
 				PintaCore.History.Clear ();
 				PintaCore.Layers.DestroySelectionLayer ();
-				PintaCore.Layers.ResetSelectionPath ();
+				PintaCore.Selection.Deselect ();
 
 				// Start with an empty white layer
 				Layer background = PintaCore.Layers.AddNewLayer ("Background");

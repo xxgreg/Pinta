@@ -60,18 +60,16 @@ namespace Pinta.Core
 			hist.TakeSnapshotOfLayer (PintaCore.Layers.CurrentLayer);
 
 			using (Context g = new Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
-
-				// Reset FillRule to the default
-				g.FillRule = FillRule.Winding;
-				g.AppendPath (g.CreatePolygonPath (polygonSet));
-
-				g.Antialias = Antialias.Subpixel;
-
-				g.Color = fill_color;
-				g.Fill ();
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
+					// Reset FillRule to the default
+					g.FillRule = FillRule.Winding;
+					g.AppendPath (g.CreatePolygonPath (polygonSet));
+	
+					g.Antialias = Antialias.Subpixel;
+	
+					g.Color = fill_color;
+					g.Fill ();
+				});
 			}
 			
 			PintaCore.History.PushNewItem (hist);

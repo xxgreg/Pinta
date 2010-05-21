@@ -66,8 +66,6 @@ namespace Pinta.Core
 			double x = Utility.Clamp (point.X, 0, PintaCore.Workspace.ImageSize.Width - 1);
 			double y = Utility.Clamp (point.Y, 0, PintaCore.Workspace.ImageSize.Height - 1);
 
-			PintaCore.Layers.ShowSelection = true;
-
 			ImageSurface surf = PintaCore.Layers.ToolLayer.Surface;
 
 			using (Context g = new Context (surf)) {
@@ -84,11 +82,11 @@ namespace Pinta.Core
 				
 				g.FillRule = FillRule.EvenOdd;
 				g.ClosePath ();
-				
-				Path old = PintaCore.Layers.SelectionPath;
-				
-				PintaCore.Layers.SelectionPath = g.CopyPath (); 
-				(old as IDisposable).Dispose ();
+
+				if (PintaCore.Selection.WorkingSelection != null)
+					PintaCore.Selection.WorkingSelection.Dispose ();
+
+				PintaCore.Selection.WorkingSelection = g.CopyPath ();
 			}
 
 			PintaCore.Workspace.Invalidate ();
@@ -99,22 +97,6 @@ namespace Pinta.Core
 			base.OnMouseUp (canvas, args, point);
 
 			ImageSurface surf = PintaCore.Layers.CurrentLayer.Surface;
-
-			using (Context g = new Context (surf)) {
-				if (path != null) {
-					g.AppendPath (path);
-					(path as IDisposable).Dispose ();
-					path = null;
-				}
-
-				g.FillRule = FillRule.EvenOdd;
-				g.ClosePath ();
-
-				Path old = PintaCore.Layers.SelectionPath;
-
-				PintaCore.Layers.SelectionPath = g.CopyPath ();
-				(old as IDisposable).Dispose ();
-			}
 
 			PintaCore.Workspace.Invalidate ();
 		}

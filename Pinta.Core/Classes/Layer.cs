@@ -199,12 +199,10 @@ namespace Pinta.Core
 			op.Apply (dstPtr, len);
 			
 			using (Context g = new Context (Surface)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
-
-				g.SetSource (dest);
-				g.Paint ();
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
+					g.SetSource (dest);
+					g.Paint ();
+				});
 			}
 
 			(dest as IDisposable).Dispose ();

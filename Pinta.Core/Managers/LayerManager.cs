@@ -48,8 +48,6 @@ namespace Pinta.Core
 		private Layer selection_layer;
 		
 		private int selection_layer_index;
-		private Path selection_path;
-		private bool show_selection;
 		
 		public LayerManager ()
 		{
@@ -60,8 +58,6 @@ namespace Pinta.Core
 			
 			selection_layer = CreateLayer ("Selection Layer");
 			selection_layer.Hidden = true;
-			
-			ResetSelectionPath ();
 			
 			transparent_layer = CreateLayer ("Transparent", 16, 16);
 			transparent_layer.Tiled = true;
@@ -111,27 +107,27 @@ namespace Pinta.Core
 			get { return current_layer; }
 		}
 		
-		public Path SelectionPath {
-			get { return selection_path; }
+//		public Path SelectionPath {
+//			get { return selection_path; }
+//
+//			set {
+//				if (selection_path == value)
+//					return;
+//				
+//				selection_path = value;
+//			}
+//		}
 
-			set {
-				if (selection_path == value)
-					return;
-				
-				selection_path = value;
-			}
-		}
-
-		public bool ShowSelection { 
-			get { return show_selection; }
-			set {
-				show_selection = value;
-				PintaCore.Actions.Edit.Deselect.Sensitive = show_selection;
-				PintaCore.Actions.Edit.EraseSelection.Sensitive = show_selection;
-				PintaCore.Actions.Edit.FillSelection.Sensitive = show_selection;
-				PintaCore.Actions.Image.CropToSelection.Sensitive = show_selection;
-			}
-		}
+//		public bool ShowSelection {
+//			get { return show_selection; }
+//			set {
+//				show_selection = value;
+//				PintaCore.Actions.Edit.Deselect.Sensitive = show_selection;
+//				PintaCore.Actions.Edit.EraseSelection.Sensitive = show_selection;
+//				PintaCore.Actions.Edit.FillSelection.Sensitive = show_selection;
+//				PintaCore.Actions.Image.CropToSelection.Sensitive = show_selection;
+//			}
+//		}
 		
 		public bool ShowSelectionLayer { get; set; }
 		#endregion
@@ -466,19 +462,6 @@ namespace Pinta.Core
 			ShowSelectionLayer = false;
 			SelectionLayer.Clear ();
 			SelectionLayer.Offset = new PointD (0, 0);
-		}
-
-		public void ResetSelectionPath ()
-		{
-			Path old = SelectionPath;
-			
-			using (Cairo.Context g = new Cairo.Context (selection_layer.Surface))
-				SelectionPath = g.CreateRectanglePath (new Rectangle (0, 0, PintaCore.Workspace.ImageSize.Width, PintaCore.Workspace.ImageSize.Height));
-			
-			if (old != null)
-				(old as IDisposable).Dispose ();
-				
-			ShowSelection = false;
 		}
 
 		public ImageSurface GetFlattenedImage ()

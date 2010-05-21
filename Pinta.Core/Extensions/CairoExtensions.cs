@@ -772,7 +772,7 @@ namespace Pinta.Core
 			Rectangle rect;
 
 			using (Context g = new Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
+				g.AppendPath (path);
 
 				// We don't want the bounding box to include a stroke width 
 				// of 1, but setting it to 0 returns an empty rectangle.  Set

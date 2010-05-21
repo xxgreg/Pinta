@@ -140,22 +140,21 @@ namespace Pinta.Core
 
 			
 			using (Context g = new Context (surf)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
 
-				g.Antialias = Antialias.Subpixel;
-				
-				g.MoveTo (last_point.X, last_point.Y);
-				g.LineTo (x, y);
-
-				g.LineWidth = BrushWidth;
-				g.LineJoin = LineJoin.Round;
-				g.LineCap = LineCap.Round;
-				
-				g.SetSource (tmp_layer);
-				
-				g.Stroke ();
+					g.Antialias = Antialias.Subpixel;
+					
+					g.MoveTo (last_point.X, last_point.Y);
+					g.LineTo (x, y);
+	
+					g.LineWidth = BrushWidth;
+					g.LineJoin = LineJoin.Round;
+					g.LineCap = LineCap.Round;
+					
+					g.SetSource (tmp_layer);
+					
+					g.Stroke ();
+				});
 			}
 			
 			PintaCore.Workspace.Invalidate (roi);

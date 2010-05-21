@@ -847,7 +847,7 @@ namespace Pinta.Core
 			RedrawText (false);
 			
 			if (saved != null) {
-				Region hitTest = Region.Rectangle (PintaCore.Layers.SelectionPath.GetBounds ());
+				Region hitTest = Region.Rectangle (PintaCore.Selection.Bounds);
 				hitTest.Intersect (saved.Region);
 				
 				if (hitTest.Clipbox.Width != 0 && hitTest.Clipbox.Height != 0) {
@@ -925,7 +925,7 @@ using (Cairo.ImageSurface surface = new Cairo.ImageSurface (Cairo.Format.Argb32,
 				}
 				
 				// Mask out anything that isn't within the user's clip region (selected region)
-				using (Region clip = Region.Rectangle (PintaCore.Layers.SelectionPath.GetBounds ())) {
+				using (Region clip = Region.Rectangle (PintaCore.Selection.Bounds)) {
 					clip.Xor (Region.Rectangle (dstRectClipped));
 					// invert
 					clip.Intersect (Region.Rectangle (new Rectangle (pt, measuredSize)));

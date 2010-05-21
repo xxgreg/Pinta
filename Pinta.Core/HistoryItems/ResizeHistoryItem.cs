@@ -34,6 +34,9 @@ namespace Pinta.Core
 	{
 		private int old_width;
 		private int old_height;
+
+		private Mask mask;
+		private bool is_selection_active;
 		
 		public ResizeHistoryItem (int oldWidth, int oldHeight) : base ()
 		{
@@ -42,10 +45,11 @@ namespace Pinta.Core
 
 			Icon = "Menu.Image.Resize.png";
 			Text = "Resize Image";
+
+			mask = PintaCore.Selection.CopySelectionMask ();
+			is_selection_active = PintaCore.Selection.IsSelectionActive;
 		}
-		
-		public Cairo.Path RestorePath { get; set; }
-		
+
 		public override void Undo ()
 		{
 			int swap_width = PintaCore.Workspace.ImageSize.Width;
@@ -59,18 +63,7 @@ namespace Pinta.Core
 			
 			base.Undo ();
 			
-			if (RestorePath != null) {
-				Cairo.Path old = PintaCore.Layers.SelectionPath;
-
-				PintaCore.Layers.SelectionPath = RestorePath.Clone ();
-				
-				if (old != null)
-					(old as IDisposable).Dispose ();
-					
-				PintaCore.Layers.ShowSelection = true;
-			} else {
-				PintaCore.Layers.ResetSelectionPath ();
-			}
+			SwapSelection ();
 			
 			PintaCore.Workspace.Invalidate ();
 		}
@@ -88,7 +81,8 @@ namespace Pinta.Core
 
 			base.Redo ();
 
-			PintaCore.Layers.ResetSelectionPath ();
+			SwapSelection ();
+
 			PintaCore.Workspace.Invalidate ();
 		}
 
@@ -96,10 +90,23 @@ namespace Pinta.Core
 		{
 			base.Dispose ();
 
-			if (RestorePath != null) {
-				(RestorePath as IDisposable).Dispose ();
-				RestorePath = null;
-			}
+			if (mask != null)
+				mask.Dispose ();
 		}
+
+		private void SwapSelection ()
+		{
+			var swap_mask = PintaCore.Selection.CopySelectionMask ();
+			var swap_active = PintaCore.Selection.IsSelectionActive;
+
+			PintaCore.Selection.SetSelectionMask (mask);
+			PintaCore.Selection.IsSelectionActive = is_selection_active;
+
+			mask = swap_mask;
+			is_selection_active = swap_active;
+			
+			PintaCore.Workspace.Invalidate ();
+		}
+
 	}
 }

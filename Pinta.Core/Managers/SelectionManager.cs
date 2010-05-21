@@ -68,10 +68,17 @@ namespace Pinta.Core
 		ImageSurface mask_surface;
 		Outline[] mask_outlines;
 
+		Cairo.ImageSurface outline_surface;
+		bool outline_invalid;
+		double outline_scale;
+		double outline_canvas_width;
+		double outline_canvas_height;
+
 		public SelectionManager ()
 		{
 			mask_surface = null;
 			mask_outlines = null;
+			outline_surface = null;
 			IsSelectionActive = false;
 			CombineMode = SelectCombineMode.Replace;
 			DisplayStyle = SelectionDisplayStyle.RedMask;
@@ -103,6 +110,9 @@ namespace Pinta.Core
 
 		public int OffsetX { get; set; }
 		public int OffsetY { get; set; }
+
+		// Used to store the path as it is drawn by a tool.
+		public Cairo.Path WorkingSelection { get; set; }
 
 		public Mask CopySelectionMask ()
 		{
@@ -204,11 +214,11 @@ namespace Pinta.Core
 			// Update mask.
 			using (var cr = new Context (mask_surface)) {
 				if (CombineMode == SelectCombineMode.Replace) {
-					Bounds = bounds;
+					//Bounds = bounds;
 					cr.Operator = Operator.Clear;
 					cr.Paint ();
 				} else {
-					Bounds.Intersect(bounds);
+					//Bounds.Intersect(bounds);
 				}
 
 				cr.Operator = GetOperator (CombineMode);
@@ -222,10 +232,73 @@ namespace Pinta.Core
 
 		void UpdateSelectionOutline ()
 		{
+			outline_invalid = true; // Cause next invalidate to redraw the path.
 			mask_outlines = EdgeExtractor.Extract (mask_surface);
+
+			if (mask_outlines == null || mask_outlines.Length == 0) {
+				Bounds = new Gdk.Rectangle (0, 0, 0, 0);
+			} else {
+				var b = mask_outlines[0].Bounds;
+				var rect = new Gdk.Rectangle (b.X, b.Y, b.Width, b.Height);
+
+				foreach (var o in mask_outlines)
+					if (o.Bounds.Width != 0 && o.Bounds.Height != 0)
+						rect = rect.Union (new Gdk.Rectangle(o.Bounds.X,
+						                                     o.Bounds.Y,
+						                                     o.Bounds.Width,
+						                                     o.Bounds.Height));
+
+				rect.Width += 1;
+				rect.Height += 1;
+
+				Bounds = rect;
+			}
 		}
 
-		public void DrawSelectionOutline (Cairo.Context cr, double scale)
+		// Caches a copy of the selection outline to prevent an expensive path drawing
+		// operation on every invalidate.
+		public void DrawSelectionOutline (Cairo.Context cr,
+		                                  int canvasWidth,
+		                                  int canvasHeight,
+		                                  double scale)
+		{
+			if (outline_surface != null
+			    && (outline_canvas_width != canvasWidth
+			        || outline_canvas_height != canvasHeight)) {
+
+				outline_surface.Dispose ();
+				outline_surface = null;
+			}
+
+			if (outline_surface == null) {
+				outline_invalid = true;
+				outline_canvas_width = canvasWidth;
+				outline_canvas_height = canvasHeight;
+				outline_scale = scale;
+
+				int w = (int) Math.Ceiling (canvasWidth * scale);
+				int h = (int) Math.Ceiling (canvasHeight * scale);
+				outline_surface = new ImageSurface (Format.A1, w, h);
+			}
+
+			if (outline_invalid || outline_scale != scale) {
+				using (var cr2 = new Context(outline_surface)) {
+					cr2.Operator = Operator.Clear;
+					cr2.Paint ();
+
+					cr2.Operator = Operator.Over;
+					cr2.LineWidth = 1;
+					cr2.SetSourceRGBA (1, 0, 0, 1);
+					StrokeOutlinePath (cr2, scale);
+				}
+				outline_invalid = false;
+			}
+
+			cr.SetSourceRGBA (1, 0, 0, 1);
+			cr.MaskSurface (outline_surface, 0, 0);
+		}
+
+		void StrokeOutlinePath (Cairo.Context cr, double scale)
 		{
 			if (mask_outlines == null)
 				return;
@@ -238,28 +311,26 @@ namespace Pinta.Core
 				y = outline.InitialPoint.Y + 2;
 
 				cr.MoveTo (x * scale + 0.5, y * scale + 0.5);
-	
+
 				foreach (var direction in outline.Path) {
-	
+
 					if (direction == Direction.Up)
 						y--;
-	
+
 					else if (direction == Direction.Right)
 						x++;
-	
+
 					else if (direction == Direction.Left)
 						x--;
-	
+
 					else if (direction == Direction.Down)
 						y++;
-	
+
 					cr.LineTo (x * scale + 0.5, y * scale + 0.5);
 				}
 
 				//cr.ClosePath ();
 
-				cr.LineWidth = 1;
-				cr.SetSourceRGBA (1, 0, 0, 1);
 				cr.Stroke ();
 			}
 		}
@@ -277,6 +348,8 @@ namespace Pinta.Core
 			OffsetX = 0;
 			OffsetY = 0;
 			mask_surface = surface;
+
+			UpdateSelectionOutline ();
 		}
 
 
@@ -297,10 +370,12 @@ namespace Pinta.Core
 
 				// Currently just set them to be the entire image.
 				// This is wrong but better than nothing for the moment.
-				int w = PintaCore.Workspace.ImageSize.Width;
-				int h = PintaCore.Workspace.ImageSize.Height;
-				Bounds = new Gdk.Rectangle (0, 0, w, h);
+				//int w = PintaCore.Workspace.ImageSize.Width;
+				//int h = PintaCore.Workspace.ImageSize.Height;
+				//Bounds = new Gdk.Rectangle (0, 0, w, h);
 			}
+
+			UpdateSelectionOutline ();
 		}
 
 		public void Feather (int radius)

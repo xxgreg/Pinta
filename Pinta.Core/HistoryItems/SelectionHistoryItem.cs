@@ -31,9 +31,6 @@ namespace Pinta.Core
 {
 	public class SelectionHistoryItem : BaseHistoryItem
 	{
-		private Path old_path;
-		private bool show_selection;
-
 		private Mask mask;
 		private bool is_selection_active;
 
@@ -55,21 +52,12 @@ namespace Pinta.Core
 
 		public override void Dispose ()
 		{
-			if (old_path != null)
-				(old_path as IDisposable).Dispose ();
+			if (mask != null)
+				mask.Dispose ();
 		}
 
 		private void Swap ()
 		{
-			Path swap_path = PintaCore.Layers.SelectionPath;
-			bool swap_show = PintaCore.Layers.ShowSelection;
-
-			PintaCore.Layers.SelectionPath = old_path;
-			PintaCore.Layers.ShowSelection = show_selection;
-
-			old_path = swap_path;
-			show_selection = swap_show;
-
 			var swap_mask = PintaCore.Selection.CopySelectionMask ();
 			var swap_active = PintaCore.Selection.IsSelectionActive;
 
@@ -84,9 +72,6 @@ namespace Pinta.Core
 		
 		public void TakeSnapshot ()
 		{
-			old_path = PintaCore.Layers.SelectionPath.Clone ();
-			show_selection = PintaCore.Layers.ShowSelection;
-
 			mask = PintaCore.Selection.CopySelectionMask ();
 			is_selection_active = PintaCore.Selection.IsSelectionActive;
 		}

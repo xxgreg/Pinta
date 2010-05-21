@@ -121,7 +121,7 @@ namespace Pinta.Core
 				gr.AlphaBlending = UseAlphaBlending;
         
 				gr.BeforeRender ();
-				gr.Render (PintaCore.Layers.CurrentLayer.Surface, new Gdk.Rectangle[] {PintaCore.Layers.SelectionPath.GetBounds ()});
+				gr.Render (PintaCore.Layers.CurrentLayer.Surface, new Gdk.Rectangle[] { PintaCore.Selection.Bounds });
 				PintaCore.Workspace.Invalidate ();
 			}
 		}

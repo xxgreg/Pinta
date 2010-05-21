@@ -131,13 +131,13 @@ namespace Pinta.Gui.Widgets
 						cr.Render (PintaCore.LivePreview.LivePreviewSurface, canvas, canvas_bounds.Location, checker);
 
 						g.Save ();
-						g.Scale (scale, scale);
-						g.AppendPath (PintaCore.Layers.SelectionPath);
-						g.Clip ();
-
-						g.Scale (1 / scale, 1 / scale);
-						g.SetSourceSurface (canvas, canvas_bounds.X, canvas_bounds.Y);
-						g.PaintWithAlpha (layer.Opacity);
+						PintaCore.Selection.DrawWithSelectionMask (g, delegate {
+							g.Scale (scale, scale);
+	
+							g.Scale (1 / scale, 1 / scale);
+							g.SetSourceSurface (canvas, canvas_bounds.X, canvas_bounds.Y);
+							g.PaintWithAlpha (layer.Opacity);
+						});
 
 						g.Restore ();
 					}
@@ -152,33 +152,57 @@ namespace Pinta.Gui.Widgets
 					g.Paint ();
 				}
 
-				// Experimental hacking...
-				// Draw A8 selection.
+				// Draw selection
 				if (PintaCore.Selection.IsSelectionActive) {
+
+					if (PintaCore.Selection.DisplayStyle == SelectionDisplayStyle.RedMask) {
+						g.Save ();
+
+						g.Translate (PintaCore.Selection.OffsetX, PintaCore.Selection.OffsetY);
+						g.Scale (scale, scale);
+
+						PintaCore.Selection.DrawWithInverseSelectionMask (g, delegate {
+							g.SetSourceRGBA (1, 0, 0, 0.3);
+							g.Paint ();
+						});
+
+						g.Restore ();
+
+					} else if (PintaCore.Selection.DisplayStyle == SelectionDisplayStyle.Outline) {
+
+						g.Save ();
+
+						g.Translate (PintaCore.Selection.OffsetX, PintaCore.Selection.OffsetY);
+						g.Scale (scale, scale);
+
+						g.Restore ();
+
+						PintaCore.Selection.DrawSelectionOutline (g, canvas.Width, canvas.Height, scale);
+					}
+
+					//DEBUG show selection bounds
 					g.Save ();
 
+					g.Translate (0.5, 0.5);
 					g.Translate (PintaCore.Selection.OffsetX, PintaCore.Selection.OffsetY);
 					g.Scale (scale, scale);
-
-					PintaCore.Selection.DrawWithInverseSelectionMask (g, delegate {
-						g.SetSourceRGBA (1, 0, 0, 0.3);
-						g.Paint ();
-					});
+					g.Rectangle (PintaCore.Selection.Bounds.ToCairoRectangle ());
 
 					g.Restore ();
 
-					g.Save ();
-					PintaCore.Selection.DrawSelectionOutline (g, scale);
-					g.Restore ();
+					g.LineWidth = 1;
+					g.SetSourceRGBA (0, 0, 1, 1);
+					g.Stroke ();
 				}
 
-				// Selection outline
-				if (PintaCore.Layers.ShowSelection) {
+
+				// Only draw this while a select tool is dragging.
+				if (PintaCore.Selection.WorkingSelection != null) {
 					g.Save ();
 					g.Translate (0.5, 0.5);
 					g.Scale (scale, scale);
 
-					g.AppendPath (PintaCore.Layers.SelectionPath);
+					g.AppendPath (PintaCore.Selection.WorkingSelection);
 
 					if (PintaCore.Tools.CurrentTool.Name.Contains ("Select") && !PintaCore.Tools.CurrentTool.Name.Contains ("Selected")) {
 						g.Color = new Cairo.Color (0.7, 0.8, 0.9, 0.2);

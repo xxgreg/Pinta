@@ -123,7 +123,7 @@ namespace Pinta.Core
 			
 			ImageSurface dest = tmp_layer.Surface;
 
-			Gdk.Rectangle roi = PintaCore.Layers.SelectionPath.GetBounds ();
+			Gdk.Rectangle roi = PintaCore.Selection.Bounds;
 			roi = PintaCore.Workspace.ClampToImageSize (roi);
 
 			if (PintaCore.System.RenderThreads <= 1) {
@@ -142,12 +142,10 @@ namespace Pinta.Core
 			}
 
 			using (Context g = new Context (PintaCore.Layers.CurrentLayer.Surface)) {
-				g.AppendPath (PintaCore.Layers.SelectionPath);
-				g.FillRule = FillRule.EvenOdd;
-				g.Clip ();
-
-				g.SetSource (dest);
-				g.Paint ();
+				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
+					g.SetSource (dest);
+					g.Paint ();
+				});
 			}
 
 			PintaCore.Workspace.Invalidate ();

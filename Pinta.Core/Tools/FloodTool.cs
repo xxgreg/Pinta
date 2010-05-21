@@ -100,7 +100,7 @@ namespace Pinta.Core
 				
 			base.OnMouseDown (canvas, args, point);
 
-			Gdk.Region currentRegion = Gdk.Region.Rectangle(PintaCore.Layers.SelectionPath.GetBounds());
+			Gdk.Region currentRegion = Gdk.Region.Rectangle(PintaCore.Selection.Bounds);
 
 			// See if the mouse click is valid
 			if (!currentRegion.PointIn (pos.X, pos.Y) && limitToSelection) {

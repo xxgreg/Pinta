@@ -69,7 +69,7 @@ namespace Pinta.Core
 				
 				// Copy data into tmp
 				var time = DateTime.Now;
-				Console.WriteLine (time);
+				//Console.WriteLine (time);
 				for (int y = 1; y < height - 1; y++) {
 					src_row = src + (y * src_stride);					
 					tmp_row = tmp + (((y + 1) * tmp_stride + 1) * 2);
@@ -85,7 +85,7 @@ namespace Pinta.Core
 						tmp_row [x * 2 + tmp_stride + 1] = pixel_value;
 					}
 				}
-				Console.WriteLine ("Upscale: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
+				//Console.WriteLine ("Upscale: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
 				time = DateTime.Now;
 			
 				// Find edges in temp
@@ -99,7 +99,7 @@ namespace Pinta.Core
 						tmp_row [tmp_stride + x * 2 + 1] = (byte) GetPixelType (tmp_row + tmp_stride + x * 2 + 1, tmp_stride);
 					}
 				}			
-				Console.WriteLine ("Find edges: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
+				//Console.WriteLine ("Find edges: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
 			
 				int i = 0;
 				//surface.WriteToPng ("src.png");
@@ -118,9 +118,9 @@ namespace Pinta.Core
 							//TODO Does isOutside determine whether this is a positive or negative shape?
 							// probably doesn't matter for my application anyways.
 						
-							Console.WriteLine ("Search: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
+							//Console.WriteLine ("Search: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
 						
-							Console.WriteLine ("Extract " + i);
+							//Console.WriteLine ("Extract " + i);
 						
 							time = DateTime.Now;
 						
@@ -131,7 +131,7 @@ namespace Pinta.Core
 						                               tmp,
 						                               tmp_stride);
 						
-							Console.WriteLine ("Extract: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
+							//Console.WriteLine ("Extract: " + ((DateTime.Now.Ticks - time.Ticks) / 10000));
 						
 							//tmpSurface.WriteToPng ("tmp" + (++i) + ".png");
 						
@@ -202,7 +202,7 @@ namespace Pinta.Core
 		                            byte* tmp,
 		                            int tmp_stride)
 		{
-			Console.WriteLine ("Extract Edge from start point: ({0}, {1})", initialX, initialY);
+			//Console.WriteLine ("Extract Edge from start point: ({0}, {1})", initialX, initialY);
 			
 			var path = new List<Direction> ();	
 			int x = initialX;
@@ -226,7 +226,7 @@ namespace Pinta.Core
 			
 			pixel_group_case = GetPixelGroupCase (src_pixel, src_stride);			
 						
-			Console.WriteLine ("Initial pixel group case: " + pixel_group_case);
+			//Console.WriteLine ("Initial pixel group case: " + pixel_group_case);
 			
 			//Highlight initial point.
 			//tmp_pixel = tmp + (((y + 1) * tmp_stride) + x + 1) * 2;
@@ -234,9 +234,9 @@ namespace Pinta.Core
 			
 			if (pixel_group_case == 0 || pixel_group_case == 15) {
 				//TODO debugging
-				Console.WriteLine ("Boom: {0}, {1}", x, y);
-				tmp_pixel = tmp + (((y + 1) * tmp_stride) + x + 1) * 2;
-				*tmp_pixel = 200;
+				//Console.WriteLine ("Boom: {0}, {1}", x, y);
+				//tmp_pixel = tmp + (((y + 1) * tmp_stride) + x + 1) * 2;
+				//*tmp_pixel = 200;
 				return new Outline () { Path = new List<Direction> () };
 				//throw new InvalidOperationException ("Initial point not on outline.");
 			}

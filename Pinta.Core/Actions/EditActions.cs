@@ -245,7 +245,7 @@ namespace Pinta.Core
 				});
 			}
 			
-			Gdk.Rectangle rect = PintaCore.Layers.SelectionPath.GetBounds ();
+			Gdk.Rectangle rect = PintaCore.Selection.Bounds;
 			
 			ImageSurface dest = new ImageSurface (Format.Argb32, rect.Width, rect.Height);
 

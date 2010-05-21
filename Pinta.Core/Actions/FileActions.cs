@@ -118,7 +118,7 @@ namespace Pinta.Core
 				PintaCore.Workspace.ImageSize = new Size (bg.Width, bg.Height);
 				PintaCore.Workspace.CanvasSize = new Gdk.Size (bg.Width, bg.Height);
 
-				PintaCore.Layers.ResetSelectionPath ();
+				PintaCore.Selection.Deselect ();
 
 				Layer layer = PintaCore.Layers.AddNewLayer (System.IO.Path.GetFileName (file));
 
@@ -322,7 +322,6 @@ namespace Pinta.Core
 
 			if (!canceled) {
 				PintaCore.History.Clear ();
-				(PintaCore.Layers.SelectionPath as IDisposable).Dispose ();
 				Application.Quit ();
 			}
 		}
