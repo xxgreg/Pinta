@@ -67,6 +67,7 @@ namespace Pinta.Core
 			ImageSurface surf = PintaCore.Layers.CurrentLayer.Surface;
 			
 			using (Context g = new Context (surf)) {
+				//TODO clear operator doesn't work in this context....
 				PintaCore.Selection.DrawWithSelectionMask (g, delegate {
 
 					g.Antialias = Antialias.Subpixel;
